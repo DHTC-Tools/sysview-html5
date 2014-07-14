@@ -24,24 +24,27 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 	<script type="text/javascript">
 		var lastData = {};
+		var haveData = false;
 		var width = 80;
 		var fitWidth = false;
-		var fontSize = 10;
 		var block = {
 			size: 12,
 			margin: 2
 		};
 		var filter = "";
+
+		var fontSize = 10;
 		
 		var loadedImages = {}; // Dict of image name -> image object
 		var notFiltered = []; // List of nodes that haven't been filtered out (if we are filtering stuff)
 
 		$(document).ready(function() {
-			getMosaicData();
+			// Get the sessionStorage data (if any)
+			getSessionStorage();
 
 			// Set the controls stuff
 
-			// Set defaults
+			// Set values in input elements
 			setControlValues();
 
 			// Set clicks
@@ -64,8 +67,17 @@
 
 				filter = $("#filter").val();
 
-				renderMosaic(lastData, $("canvas")[0]);
+				if(haveData) {
+					// If we've gotten data, just redraw
+					haveData = true;
+					renderMosaic(lastData, $("canvas")[0]);
+				}
+				else {
+					// Otherwise, retrieve the data
+					getMosaicData($("canvas")[0]);
+				}
 				setControlValues();
+				setSessionStorage();
 			});
 			$("#backgroundColor").change(function() {
 				if($(this).val() === "White") {
@@ -76,6 +88,8 @@
 					document.body.style.backgroundColor = "#000";
 					document.body.style.color = "#fff";
 				}
+
+				setSessionStorage();
 			});
 
 			$(window).resize(function() {
@@ -86,6 +100,9 @@
 				renderMosaic(lastData, $("canvas")[0]);
 				setControlValues();
 			});
+
+			// Set everything in motion
+			$("#redraw").click();
 		});
 
 		function setControlValues() {
@@ -94,6 +111,30 @@
 			$("#blockSize").val(block.size);
 			$("#blockMargin").val(block.margin);
 			$("#filter").val(filter);
+			$("#fitWidth").attr("checked", fitWidth);
+		}
+
+		function getSessionStorage() {
+			if(!sessionStorage) return;
+
+			if(sessionStorage.mosaicWidth) width = parseInt(sessionStorage.mosaicWidth);
+			if(sessionStorage.mosaicFitWidth) fitWidth = sessionStorage.mosaicFitWidth === "true" ? true : false;
+			if(sessionStorage.mosaicBlockSize) block.size = parseInt(sessionStorage.mosaicBlockSize);
+			if(sessionStorage.mosaicBlockMargin) block.margin = parseInt(sessionStorage.mosaicBlockMargin);
+			if(sessionStorage.mosaicFilter) filter = sessionStorage.mosaicFilter;
+
+			if(sessionStorage.mosaicBackgroundColor) $("#backgroundColor").val(sessionStorage.mosaicBackgroundColor).trigger("change");
+		}
+
+		function setSessionStorage() {
+			if(!sessionStorage) return;
+
+			sessionStorage.mosaicWidth = width;
+			sessionStorage.mosaicFitWidth = fitWidth;
+			sessionStorage.mosaicBlockSize = block.size;
+			sessionStorage.mosaicBlockMargin = block.margin;
+			sessionStorage.mosaicFilter = filter;
+			sessionStorage.mosaicBackgroundColor = $("#backgroundColor").val();
 		}
 
 		function getMosaicData(canv) {
@@ -103,6 +144,7 @@
 				success: function(data) {
 					console.log(data);
 					lastData = data;
+					$("#backgroundColor").trigger("change"); // Double check to make sure the background is the right color
 					renderMosaic(data, canv)
 				}
 			});
