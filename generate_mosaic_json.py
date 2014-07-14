@@ -294,6 +294,7 @@ for node in nodes:
         dot_type = ''
         link = None
         no_job_in_slot = True
+        state = "";
 
 
         if 'down' in node_state:
@@ -475,7 +476,7 @@ for node in nodes:
 
         text.append("Updated by %s on %s" % (updated_user, updated_time))
 
-        data.append((slotname, color, dot_type, text, link, bg_color))
+        data.append((slotname, state, color, dot_type, text, link, bg_color))
 
 
 timer.end()
@@ -483,20 +484,18 @@ timer.end()
 # Generate json with the system information
 timer = Timer("Generate JSON")
 try:
-	if verbose: print "Making json file..."
-	jsonfile = open(JSON_PATH, "w")
-	dataDict = { "time": time.ctime(), "nodes": []}
-	for i, nodeData in enumerate(data):
-			if verbose: print i, nodeData
-			name, (r,g,b), dot_type, text, link, (br, bg, bb) = nodeData
-			dataDict["nodes"].append({"name": name, "color": {"r": r, "g": g, "b": b}, "background_color": {"r": br, "g": bg, "b": bb}, "dot_type": dot_type, "text": text, "link": link})
-	json.dump(dataDict, jsonfile)
-	jsonfile.close()
-	if verbose: print "done"
+    if verbose: print "Making json file..."
+    jsonfile = open(JSON_PATH, "w")
+    dataDict = { "time": time.ctime(), "nodes": []}
+    for i, nodeData in enumerate(data):
+            if verbose: print i, nodeData
+            name, state, (r,g,b), dot_type, text, link, (br, bg, bb) = nodeData
+            dataDict["nodes"].append({"name": name, "state": state, "color": {"r": r, "g": g, "b": b}, "background_color": {"r": br, "g": bg, "b": bb}, "dot_type": dot_type, "text": text, "link": link})
+    json.dump(dataDict, jsonfile)
+    jsonfile.close()
+    if verbose: print "done"
 except Exception, e:
-	if verbose: print "Error making json file: ", e
+    if verbose: print "Error making json file: ", e
 timer.end()
 
 main_timer.end()
-
-
