@@ -19,11 +19,23 @@
 			text-align: left;
 			font-size: 10px;
 		}
+
+		#controls {
+			margin: auto 0;
+		}
+
+		#controls fieldset {
+			display: inline;
+			margin: 10px;
+		}
 	</style>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 	<script type="text/javascript">
 		var lastData = {};
+		var sites = ["uct2", "iut2", "golub", "taub", "uc3", "uct3"];
+		var states = ["dead", "offline", "online", "down", "midline"];
+
 		var haveData = false;
 		var width = 80;
 		var fitWidth = false;
@@ -32,6 +44,8 @@
 			margin: 2
 		};
 		var filter = "";
+		var filterStates = [];
+		var filterSites = [];
 
 		var fontSize = 10;
 		
@@ -67,13 +81,23 @@
 
 				filter = $("#filter").val();
 
+				filterStates = [];
+				$("#stateSelect :selected").each(function(sel) {
+					filterStates.push($(this).val());
+				});
+
+				filterSites = [];
+				$("#siteSelect :selected").each(function(sel) {
+					filterSites.push($(this).val());
+				});
+
 				if(haveData) {
 					// If we've gotten data, just redraw
-					haveData = true;
 					renderMosaic(lastData, $("canvas")[0]);
 				}
 				else {
 					// Otherwise, retrieve the data
+					haveData = true;
 					getMosaicData($("canvas")[0]);
 				}
 				setControlValues();
@@ -161,10 +185,25 @@
 			}
 			canvas.width = width * (block.size + block.margin) + block.margin;
 
+			// Run the nodes through the filter
 			notFiltered = [];
 			for(var i = 0; i < data.nodes.length; i++) {
-				if(data.nodes[i].name.indexOf(filter) !== -1) {
-					notFiltered.push(data.nodes[i]);
+				var node = data.nodes[i];
+
+				// See if the node's site is filtered by checking the node's name
+				var siteIsChosen = filterSites.length === 0;
+				for(var j=0; j < filterSites.length; j++) {
+					if(node.name.indexOf(filterSites[j]) !== -1 || filterSites[j] === "All") {
+						siteIsChosen = true;
+						break;
+					}
+				}
+				if(
+				   	  (node.name.indexOf(filter) !== -1) // Filter text
+				   && (filterStates.length !== 0 && filterStates.indexOf(node.state) !== -1 || filterStates.indexOf("All") !== -1 || filterStates.length === 0) // filter states
+				   && (siteIsChosen) // filter sites
+				   ) {
+					notFiltered.push(node);
 				}
 			}
 			canvas.height = Math.floor(notFiltered.length / width) * (block.size + block.margin) + block.margin * (3/2);
@@ -254,16 +293,11 @@
 			var ctx = canvas.getContext("2d");
 
 			ctx.fillStyle = "#000";
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 			// Render the squares
 			var x = 0, y = 0;
 			for(var i=0; i < notFiltered.length; i++) {
 				var node = notFiltered[i];
-
-				if(filter && node.name.indexOf(filter) === -1) {
-					continue;
-				}
 
 				var rect = {
 					x: block.margin + x * (block.margin + block.size),
@@ -354,15 +388,24 @@
 <body>
 	<input type="button" id="toggleControls" value="Toggle Controls"/>
 	<form id="controls" action="javascript:void(0);">
-		Background Color: <select id="backgroundColor"><option>White</option><option>Black</option></select>
-		<br />
-		Columns: <input type="text" id="numColumns" maxlength=3 size=3/>
-		Fit Width: <input type="checkbox" id="fitWidth"/>
-		<br />
-		Block Size: <input type="text" id="blockSize" maxlength=3 size=3/>
-		Margins: <input type="text" id="blockMargin" maxlength=3 size=3/>
-		<br />
-		Filter: <input type="text" id="filter"/>
+		<fieldset>
+			<legend>Display:</legend>
+			Background Color: <select id="backgroundColor"><option>White</option><option>Black</option></select>
+			<br/>
+			Columns: <input type="text" id="numColumns" maxlength=3 size=3/>
+			Fit Width: <input type="checkbox" id="fitWidth"/>
+			<br />
+			Block Size: <input type="text" id="blockSize" maxlength=3 size=3/>
+			Margins: <input type="text" id="blockMargin" maxlength=3 size=3/>
+			<br />
+			Filter: <input type="text" id="filter"/>
+		</fieldset>
+		<fieldset>
+			<legend>Nodes:</legend>
+			Site: <select id="siteSelect" multiple><option>All</option><option>uct2</option> <option>iut2</option> <option>golub</option> <option>taub</option> <option>uc3</option> <option>uct3</option></select>
+			State: <select id="stateSelect" multiple><option>All</option> <option>dead</option> <option>offline</option> <option>online</option> <option>down</option> <option>midline</option></select>
+			<br />
+		</fieldset>
 		<br />
 		<input type="submit" id="redraw" value="Redraw"/>
 	</form>
