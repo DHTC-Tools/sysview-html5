@@ -136,6 +136,19 @@ function getMosaicData(canv) {
 			lastData = data;
 			$("#backgroundColor").trigger("change"); // Double check to make sure the background is the right color
 			renderMosaic(data, canv)
+		},
+		error: function(jqXHR, status, error) {
+		    // There's been an issue. Let's print it out then try again in two minutes
+		    console.log("There's been an error: " + status + ": " + error);
+
+		    // Set to reload in 2 minutes
+		    setTimeout(
+			function() {
+			    console.log("Reloading...");
+			    getMosaicData(canv);
+			},
+			1000 * 60 * 2
+		    );	    
 		}
 	});
 }
