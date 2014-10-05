@@ -1,6 +1,7 @@
 var lastData = {};
 var sites = ["uct2", "iut2", "golub", "taub", "uc3", "uct3"];
 var states = ["dead", "offline", "online", "down", "midline"];
+var MOSAIC_URL = "mosaic.json";
 
 var haveData = false;
 var width = 80;
@@ -130,7 +131,7 @@ function setLocalStorage() {
 function getMosaicData(canv) {
 	$.ajax({
 		dataType: "json",
-		url: "mosaic.json",
+		url: MOSAIC_URL,
 		success: function(data) {
 			console.log(data);
 			lastData = data;
