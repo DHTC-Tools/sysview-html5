@@ -288,8 +288,25 @@ function renderMosaic(data, canv) {
 
 		ctx.fillStyle = "rgb(" + node.color.r + "," + node.color.g + "," + node.color.b + ")";
 		ctx.strokeStyle = "rgb(" + node.background_color.r + "," + node.background_color.g + "," + node.background_color.b + ")";
-		ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-		ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+		// Check the node names forward and backward
+		// Used to draw overlapping borders for multicore jobs
+		var sameForward = notFiltered[i+1] && notFiltered[i+1].name === node.name;
+		var sameBackward = notFiltered[i-1] && notFiltered[i-1].name === node.name;
+		if(sameForward || sameBackward) {
+			// If the name of the next node is the same as this one, draw a bit outside the border (for multicore jobs)
+			ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);	
+			if(sameForward) {
+				ctx.fillRect(rect.x, rect.y, rect.w + block.margin * 2, rect.h);
+			}
+			if(sameBackward) {
+				ctx.fillRect(rect.x - block.margin , rect.y, rect.w + block.margin, rect.h);
+			}
+		}
+		else {
+			ctx.fillRect(rect.x, rect.y, rect.w, rect.h);	
+			ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);	
+		}
 
 		// Job icons
 		if(node.dot_type && node.dot_type !== "prod") {
