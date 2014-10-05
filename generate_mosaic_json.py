@@ -201,11 +201,13 @@ timer = Timer("get job info")
 job_times = mc_get_multi(["%s.times"%j for j in jobs])
 job_prev_times = mc_get_multi(["%s.prev_times"%j for j in jobs])
 job_users = mc_get_multi(["%s.user"%j for j in jobs])
+job_cpus = mc_get_multi(["%s.cpus"%j for j in jobs])
 
 job_mem = mc_get_multi(["%s.mem"%j for j in jobs])
 job_types = mc_get_multi(["%s.type"%j for j in jobs])
 job_panda = mc_get_multi(["%s.panda_id"%j for j in jobs])
 panda_info = mc_get_multi(["%s.info"%p for p in job_panda.values()])
+
 timer.end()
 
 # For each square:
@@ -295,7 +297,7 @@ for node in nodes:
         link = None
         no_job_in_slot = True
         state = "";
-
+        numblocks = 1
 
         if 'down' in node_state:
             color = red
@@ -336,10 +338,10 @@ for node in nodes:
         text = []
         slotname = "%s/%s" % (hostname, slot)
         job = slot_info.get("%s.%d" % (hostname, slot))
-
         if job:
             wsecs, csecs = job_times.get("%s.times"%job, (0,0))
             prev_wsecs, prev_csecs = job_prev_times.get("%s.prev_times"%job, (0,0))
+            numblocks = job_cpus.get("%s.cpus" % job, 1) 
             rss, vm = job_mem.get("%s.mem"%job, ('0','0'))
             walltime = cputime = "???" # display string
             
@@ -348,7 +350,7 @@ for node in nodes:
                 panda_user, panda_type = panda_info.get("%s.info"%panda_id, (None, None))
 
             dot_type = job_types.get('%s.type' % job)
-
+                        
             if wsecs and prev_wsecs:
                 wsecs -= prev_wsecs
             if csecs and prev_csecs:
@@ -476,7 +478,8 @@ for node in nodes:
 
         text.append("Updated by %s on %s" % (updated_user, updated_time))
 
-        data.append((slotname, state, color, dot_type, text, link, bg_color))
+        for _ in xrange(numblocks):
+            data.append((slotname, state, color, dot_type, text, link, bg_color))
 
 
 timer.end()
@@ -499,3 +502,5 @@ except Exception, e:
 timer.end()
 
 main_timer.end()
+
+
