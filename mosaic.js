@@ -12,6 +12,7 @@ var block = {
 };
 var filter = "";
 var duplicateMulticore = true;
+var fontSize = "10"
 var filterStates = [];
 var filterSites = [];
 
@@ -46,6 +47,7 @@ $(document).ready(function() {
 
 		block.size = parseInt($("#blockSize").val()) || block.size;
 		block.margin = parseInt($("#blockMargin").val()) || block.margin;
+		fontSize = $("#fontSize").val() || fontSize;
 
 		filter = $("#filter").val();
 		duplicateMulticore = $("#dupMulti").is(":checked") !== undefined ? $("#dupMulti").is(":checked"): dupMulti;
@@ -103,6 +105,7 @@ function setControlValues() {
 	$("#numColumns").val(width);
 	$("#blockSize").val(block.size);
 	$("#blockMargin").val(block.margin);
+	$("#fontSize").val(fontSize);
 	$("#filter").val(filter);
 	$("#fitWidth").attr("checked", fitWidth);
 	$("#dupMulti").attr("checked", duplicateMulticore);
@@ -115,6 +118,7 @@ function getLocalStorage() {
 	if(localStorage.mosaicFitWidth) fitWidth = localStorage.mosaicFitWidth === "true" ? true : false;
 	if(localStorage.mosaicBlockSize) block.size = parseInt(localStorage.mosaicBlockSize);
 	if(localStorage.mosaicBlockMargin) block.margin = parseInt(localStorage.mosaicBlockMargin);
+	if(localStorage.mosaicFontSize) fontSize = localStorage.mosaicFontSize;
 	if(localStorage.mosaicFilter) filter = localStorage.mosaicFilter;
 	if(localStorage.mosaicDupMulti) duplicateMulticore = localStorage.mosaicDupMulti === "true" ? true : false;
 
@@ -128,6 +132,7 @@ function setLocalStorage() {
 	localStorage.mosaicFitWidth = fitWidth;
 	localStorage.mosaicBlockSize = block.size;
 	localStorage.mosaicBlockMargin = block.margin;
+	localStorage.mosaicFontSize = fontSize;
 	localStorage.mosaicFilter = filter;
 	localStorage.mosaicBackgroundColor = $("#backgroundColor").val();
 	localStorage.mosaicDupMulti = duplicateMulticore;
@@ -283,6 +288,9 @@ function renderMosaic(data, canv) {
 
 	// Render the squares
 	var x = 0, y = 0;
+	ctx.font = "bold " + fontSize + "px Monospace";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
 	for(var i=0; i < notFiltered.length; i++) {
 		var node = notFiltered[i];
 
@@ -317,43 +325,89 @@ function renderMosaic(data, canv) {
 
 		// Job icons
 		if(node.dot_type && node.dot_type !== "prod") {
+			var icon = "";
 			// Draw the job icon
-			var img = loadedImages[node.dot_type];
-			if(!img) {
-				// Load the image
-				(function(rect) {
-					img = new Image();
-					img.loadqueue = [rect];
-					img.hasloaded = false;
-					img.onload = function() {
-						for(var i=0; i < this.loadqueue.length; i++) {
-							ctx.drawImage(this,
-										 this.loadqueue[i].x + this.loadqueue[i].w / 2 - this.width / 2 + 1,
-										 this.loadqueue[i].y + this.loadqueue[i].h / 2 - this.height / 2 + 1);
-						}
-						this.hasloaded = true;
-					}
-					if(node.dot_type === "?") {
-						img.src =  "./unknown.png";
-					}
-					else {
-						img.src = "./" + node.dot_type + ".png";
-					}
-					// Lets not waste space loading multiple of the same image
-					loadedImages[node.dot_type] = img;
-				})(rect);
+			switch(node.dot_type) {
+				case "analy":
+					icon = "●";
+					break;
+				case "atlasconnect":
+				case "dukeconnect":
+				case "osgconnect":
+					icon = "*";
+					break;
+				case "cms":
+					icon = "=";
+					break;
+				case "csui":
+					icon = "c";
+					break;
+				case "des":
+					icon = "D";
+					break;
+				case "dzero":
+					icon = "D0";
+					break;
+				case "engage":
+					icon = "e";
+					break;
+				case "fnalgrid":
+					icon = "FG";
+					break;
+				case "glow":
+					icon = "g";
+					break;
+				case "hcc":
+					icon = "h";
+					break;
+				case "install":
+					icon = "i";
+					break;
+				case "lsst":
+					icon = "L";
+					break;
+				case "mcore":
+					icon = "MC";
+					break;
+				case "mis":
+					icon = "m";
+					break;
+				case "nova":
+					icon = "NV";
+					break;
+				case "opport":
+					icon = "(?)";
+					break;
+				case "osgedu":
+					icon = "E";
+					break;
+				case "osg":
+					icon = "o";
+					break;
+				case "ruc":
+					icon = "cc";
+					break;
+				case "test":
+					icon = "T";
+					break;
+				case "tier3":
+					icon = "T3";
+					break;
+				case "uc3":
+					icon = "C3";
+					break;
+				case "uct3":
+					icon = "t3";
+					break;
+				case "unknown":
+				case "?":
+					icon = "?";
+					break;
 			}
-			else {
-				// Draw the image
-				if(img.hasloaded) {
-					// If the image has loaded, just go ahead and draw it
-					ctx.drawImage(img, rect.x + rect.w / 2 - img.width / 2 + 1, rect.y + rect.h / 2 - img.height / 2 + 1);
-				}
-				else {
-					// If it's not loaded, tell the image to draw here (rect) when it's done
-					img.loadqueue.push(rect);
-				}
-			}
+
+			// Render the icon
+			ctx.fillStyle = "#000";
+			ctx.fillText(icon, rect.x + rect.w / 2, rect.y + rect.h / 2, rect.w);
 		}
 
 		x++;
