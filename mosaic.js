@@ -11,6 +11,7 @@ var block = {
 	margin: 2
 };
 var filter = "";
+var duplicateMulticore = true;
 var filterStates = [];
 var filterSites = [];
 
@@ -47,6 +48,7 @@ $(document).ready(function() {
 		block.margin = parseInt($("#blockMargin").val()) || block.margin;
 
 		filter = $("#filter").val();
+		duplicateMulticore = $("#dupMulti").is(":checked") !== undefined ? $("#dupMulti").is(":checked"): dupMulti;
 
 		filterStates = [];
 		$("#stateSelect :selected").each(function(sel) {
@@ -103,6 +105,7 @@ function setControlValues() {
 	$("#blockMargin").val(block.margin);
 	$("#filter").val(filter);
 	$("#fitWidth").attr("checked", fitWidth);
+	$("#dupMulti").attr("checked", duplicateMulticore);
 }
 
 function getLocalStorage() {
@@ -113,6 +116,7 @@ function getLocalStorage() {
 	if(localStorage.mosaicBlockSize) block.size = parseInt(localStorage.mosaicBlockSize);
 	if(localStorage.mosaicBlockMargin) block.margin = parseInt(localStorage.mosaicBlockMargin);
 	if(localStorage.mosaicFilter) filter = localStorage.mosaicFilter;
+	if(localStorage.mosaicDupMulti) duplicateMulticore = localStorage.mosaicDupMulti === "true" ? true : false;
 
 	if(localStorage.mosaicBackgroundColor) $("#backgroundColor").val(localStorage.mosaicBackgroundColor).trigger("change");
 }
@@ -126,6 +130,7 @@ function setLocalStorage() {
 	localStorage.mosaicBlockMargin = block.margin;
 	localStorage.mosaicFilter = filter;
 	localStorage.mosaicBackgroundColor = $("#backgroundColor").val();
+	localStorage.mosaicDupMulti = duplicateMulticore;
 }
 
 function getMosaicData(canv) {
@@ -167,6 +172,7 @@ function renderMosaic(data, canv) {
 
 	// Run the nodes through the filter
 	notFiltered = [];
+	var lastNode = null;
 	for(var i = 0; i < data.nodes.length; i++) {
 		var node = data.nodes[i];
 
@@ -178,13 +184,14 @@ function renderMosaic(data, canv) {
 				break;
 			}
 		}
-		if(
-		   	  (node.name.indexOf(filter) !== -1) // Filter text
+		if((node.name.indexOf(filter) !== -1) // Filter text
 		   && (filterStates.length !== 0 && filterStates.indexOf(node.state) !== -1 || filterStates.indexOf("All") !== -1 || filterStates.length === 0) // filter states
 		   && (siteIsChosen) // filter sites
+		   && (duplicateMulticore || (lastNode && node.name !== lastNode.name)) // Ignore duplicate blocks (unless they're enabled)
 		   ) {
 			notFiltered.push(node);
 		}
+		lastNode = node;
 	}
 	canvas.height = Math.floor(notFiltered.length / width) * (block.size + block.margin) + block.margin * (3/2);
 	if(notFiltered.length % width !== 0) canvas.height += block.size;
