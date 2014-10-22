@@ -4,19 +4,18 @@ var states = ["dead", "offline", "online", "down", "midline"];
 var MOSAIC_URL = "mosaic.json";
 
 var haveData = false;
-var width = 80;
-var fitWidth = false;
-var block = {
-	size: 12,
-	margin: 2
-};
-var filter = "";
-var duplicateMulticore = true;
-var fontSize = "10"
-var filterStates = [];
-var filterSites = [];
 
-var fontSize = 10;
+// All controls associated with the mosic
+var mosaicControls = {};
+mosaicControls.width = 80;
+mosaicControls.fitWidth = false;
+mosaicControls.blockSize = 12;
+mosaicControls.blockMargin = 2;
+mosaicControls.filter = "";
+mosaicControls.duplicateMulticore = true;
+mosaicControls.fontSize = "10"
+mosaicControls.filterStates = [];
+mosaicControls.filterSites = [];
 
 var loadedImages = {}; // Dict of image name -> image object
 var notFiltered = []; // List of nodes that haven't been filtered out (if we are filtering stuff)
@@ -39,27 +38,27 @@ $(document).ready(function() {
 		$("#numColumns").prop("disabled", isChecked); //Disable the columns box if fit to screen is chosen
 	});
 	$("#redraw").click(function() {
-		fitWidth = $("#fitWidth").is(":checked") !== undefined ? $("#fitWidth").is(":checked"): fitWidth;
+		mosaicControls.fitWidth = $("#fitWidth").is(":checked") !== undefined ? $("#fitWidth").is(":checked"): mosaicControls.fitWidth;
 
-		if(!fitWidth) {
-			width = parseInt($("#numColumns").val()) || width;
+		if(!mosaicControls.fitWidth) {
+			mosaicControls.width = parseInt($("#numColumns").val()) || mosaicControls.width;
 		}
 
-		block.size = parseInt($("#blockSize").val()) || block.size;
-		block.margin = parseInt($("#blockMargin").val()) || block.margin;
-		fontSize = $("#fontSize").val() || fontSize;
+		mosaicControls.blockSize = parseInt($("#blockSize").val()) || mosaicControls.blockSize;
+		mosaicControls.blockMargin = parseInt($("#blockMargin").val()) || mosaicControls.blockMargin;
+		mosaicControls.fontSize = $("#fontSize").val() || fontSize;
 
-		filter = $("#filter").val();
-		duplicateMulticore = $("#dupMulti").is(":checked") !== undefined ? $("#dupMulti").is(":checked"): dupMulti;
+		mosaicControls.filter = $("#filter").val();
+		mosaicControls.duplicateMulticore = $("#dupMulti").is(":checked") !== undefined ? $("#dupMulti").is(":checked"): mosaicControls.duplicateMulticore;
 
-		filterStates = [];
+		mosaicControls.filterStates = [];
 		$("#stateSelect :selected").each(function(sel) {
-			filterStates.push($(this).val());
+			mosaicControls.filterStates.push($(this).val());
 		});
 
-		filterSites = [];
+		mosaicControls.filterSites = [];
 		$("#siteSelect :selected").each(function(sel) {
-			filterSites.push($(this).val());
+			mosaicControls.filterSites.push($(this).val());
 		});
 
 		if(haveData) {
@@ -90,7 +89,7 @@ $(document).ready(function() {
 	$(window).resize(function() {
 		// If we're fitting to the screen, we need to adjust on resize
 		// If we're not, then just ignore it
-		if(!fitWidth) return;
+		if(!mosaicControls.fitWidth) return;
 
 		renderMosaic(lastData, $("canvas")[0]);
 		setControlValues();
@@ -102,25 +101,25 @@ $(document).ready(function() {
 
 function setControlValues() {
 	// Set the controls to the values that are in the variables
-	$("#numColumns").val(width);
-	$("#blockSize").val(block.size);
-	$("#blockMargin").val(block.margin);
-	$("#fontSize").val(fontSize);
-	$("#filter").val(filter);
-	$("#fitWidth").attr("checked", fitWidth);
-	$("#dupMulti").attr("checked", duplicateMulticore);
+	$("#numColumns").val(mosaicControls.width);
+	$("#blockSize").val(mosaicControls.blockSize);
+	$("#blockMargin").val(mosaicControls.blockMargin);
+	$("#fontSize").val(mosaicControls.fontSize);
+	$("#filter").val(mosaicControls.filter);
+	$("#fitWidth").attr("checked", mosaicControls.fitWidth);
+	$("#dupMulti").attr("checked", mosaicControls.duplicateMulticore);
 }
 
 function getLocalStorage() {
 	if(!localStorage) return;
 
-	if(localStorage.mosaicWidth) width = parseInt(localStorage.mosaicWidth);
-	if(localStorage.mosaicFitWidth) fitWidth = localStorage.mosaicFitWidth === "true" ? true : false;
-	if(localStorage.mosaicBlockSize) block.size = parseInt(localStorage.mosaicBlockSize);
-	if(localStorage.mosaicBlockMargin) block.margin = parseInt(localStorage.mosaicBlockMargin);
-	if(localStorage.mosaicFontSize) fontSize = localStorage.mosaicFontSize;
-	if(localStorage.mosaicFilter) filter = localStorage.mosaicFilter;
-	if(localStorage.mosaicDupMulti) duplicateMulticore = localStorage.mosaicDupMulti === "true" ? true : false;
+	if(localStorage.mosaicWidth) mosaicControls.width = parseInt(localStorage.mosaicWidth);
+	if(localStorage.mosaicFitWidth) mosaicControls.fitWidth = localStorage.mosaicFitWidth === "true" ? true : false;
+	if(localStorage.mosaicBlockSize) mosaicControls.blockSize = parseInt(localStorage.mosaicBlockSize);
+	if(localStorage.mosaicBlockMargin) mosaicControls.blockMargin = parseInt(localStorage.mosaicBlockMargin);
+	if(localStorage.mosaicFontSize) mosaicControls.fontSize = localStorage.mosaicFontSize;
+	if(localStorage.mosaicFilter) mosaicControls.filter = localStorage.mosaicFilter;
+	if(localStorage.mosaicDupMulti) mosaicControls.duplicateMulticore = localStorage.mosaicDupMulti === "true" ? true : false;
 
 	if(localStorage.mosaicBackgroundColor) $("#backgroundColor").val(localStorage.mosaicBackgroundColor).trigger("change");
 }
@@ -128,14 +127,14 @@ function getLocalStorage() {
 function setLocalStorage() {
 	if(!localStorage) return;
 
-	localStorage.mosaicWidth = width;
-	localStorage.mosaicFitWidth = fitWidth;
-	localStorage.mosaicBlockSize = block.size;
-	localStorage.mosaicBlockMargin = block.margin;
-	localStorage.mosaicFontSize = fontSize;
-	localStorage.mosaicFilter = filter;
+	localStorage.mosaicWidth = mosaicControls.width;
+	localStorage.mosaicFitWidth = mosaicControls.fitWidth;
+	localStorage.mosaicBlockSize = mosaicControls.blockSize;
+	localStorage.mosaicBlockMargin = mosaicControls.blockMargin;
+	localStorage.mosaicFontSize = mosaicControls.fontSize;
+	localStorage.mosaicFilter = mosaicControls.filter;
 	localStorage.mosaicBackgroundColor = $("#backgroundColor").val();
-	localStorage.mosaicDupMulti = duplicateMulticore;
+	localStorage.mosaicDupMulti = mosaicControls.duplicateMulticore;
 }
 
 function getMosaicData(canv) {
@@ -168,12 +167,12 @@ function renderMosaic(data, canv) {
 
 	// Create the canvas
 	var canvas = canv || document.createElement("canvas");
-	if(fitWidth) {
+	if(mosaicControls.fitWidth) {
 		// Set the width based on window width;
 		var w = $(window).width();
-		width = Math.floor(w / (block.size + block.margin)) - 1;
+		mosaicControls.width = Math.floor(w / (mosaicControls.blockSize + mosaicControls.blockMargin)) - 1;
 	}
-	canvas.width = width * (block.size + block.margin) + block.margin;
+	canvas.width = mosaicControls.width * (mosaicControls.blockSize + mosaicControls.blockMargin) + mosaicControls.blockMargin;
 
 	// Run the nodes through the filter
 	notFiltered = [];
@@ -182,33 +181,33 @@ function renderMosaic(data, canv) {
 		var node = data.nodes[i];
 
 		// See if the node's site is filtered by checking the node's name
-		var siteIsChosen = filterSites.length === 0;
-		for(var j=0; j < filterSites.length; j++) {
-			if(node.name.indexOf(filterSites[j]) !== -1 || filterSites[j] === "All") {
+		var siteIsChosen = mosaicControls.filterSites.length === 0;
+		for(var j=0; j < mosaicControls.filterSites.length; j++) {
+			if(node.name.indexOf(mosaicControls.filterSites[j]) !== -1 || mosaicControls.filterSites[j] === "All") {
 				siteIsChosen = true;
 				break;
 			}
 		}
-		if((node.name.indexOf(filter) !== -1) // Filter text
-		   && (filterStates.length !== 0 && filterStates.indexOf(node.state) !== -1 || filterStates.indexOf("All") !== -1 || filterStates.length === 0) // filter states
+		if((node.name.indexOf(mosaicControls.filter) !== -1) // Filter text
+		   && (mosaicControls.filterStates.length !== 0 && mosaicControls.filterStates.indexOf(node.state) !== -1 || mosaicControls.filterStates.indexOf("All") !== -1 || mosaicControls.filterStates.length === 0) // filter states
 		   && (siteIsChosen) // filter sites
-		   && (duplicateMulticore || (lastNode && node.name !== lastNode.name)) // Ignore duplicate blocks (unless they're enabled)
+		   && (mosaicControls.duplicateMulticore || (lastNode && node.name !== lastNode.name)) // Ignore duplicate blocks (unless they're enabled)
 		   ) {
 			notFiltered.push(node);
 		}
 		lastNode = node;
 	}
-	canvas.height = Math.floor(notFiltered.length / width) * (block.size + block.margin) + block.margin * (3/2);
-	if(notFiltered.length % width !== 0) canvas.height += block.size;
+	canvas.height = Math.floor(notFiltered.length / mosaicControls.width) * (mosaicControls.blockSize + mosaicControls.blockMargin) + mosaicControls.blockMargin * (3/2);
+	if(notFiltered.length % mosaicControls.width !== 0) canvas.height += mosaicControls.blockSize;
 	
 
 	// Helper function that turns mouse x/y coordinates to a block index
 	var getBlockIndexFromPos = function(x, y) {
 		var blockX, blockY, blockIndex;
-		blockX = Math.floor((x - block.margin) / (block.size + block.margin));
-		blockY = Math.floor((y - block.margin) / (block.size + block.margin));
+		blockX = Math.floor((x - mosaicControls.blockMargin) / (mosaicControls.blockSize + mosaicControls.blockMargin));
+		blockY = Math.floor((y - mosaicControls.blockMargin) / (mosaicControls.blockSize + mosaicControls.blockMargin));
 		
-		blockIndex = blockY * width + blockX;
+		blockIndex = blockY * mosaicControls.width + blockX;
 		return blockIndex;
 	}
 
@@ -250,8 +249,8 @@ function renderMosaic(data, canv) {
 		}
 		// Set the tooltip's position to the mouse position
 		// If the tooltip is halfway down/across the screen, make it switch to the other side of the cursor
-		$(".ui-tooltip").css("left", (e.clientX < $(window).width() / 2 ? e.pageX + block.size * 2 : e.pageX - $(".ui-tooltip").width() - block.size * 4));
-		$(".ui-tooltip").css("top", (e.clientY < $(window).height() / 2 ? e.pageY + block.size : e.pageY - $(".ui-tooltip").height() - block.size * 2));
+		$(".ui-tooltip").css("left", (e.clientX < $(window).width() / 2 ? e.pageX + mosaicControls.blockSize * 2 : e.pageX - $(".ui-tooltip").width() - mosaicControls.blockSize * 4));
+		$(".ui-tooltip").css("top", (e.clientY < $(window).height() / 2 ? e.pageY + mosaicControls.blockSize : e.pageY - $(".ui-tooltip").height() - mosaicControls.blockSize * 2));
 		$(canvas).tooltip("option", "content", tooltip);
 		// Show the tooltip
 		$(canvas).tooltip("open");
@@ -288,17 +287,17 @@ function renderMosaic(data, canv) {
 
 	// Render the squares
 	var x = 0, y = 0;
-	ctx.font = "bold " + fontSize + "px Monospace";
+	ctx.font = "bold " + mosaicControls.fontSize + "px Monospace";
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 	for(var i=0; i < notFiltered.length; i++) {
 		var node = notFiltered[i];
 
 		var rect = {
-			x: block.margin + x * (block.margin + block.size),
-			y: block.margin + y * (block.margin + block.size),
-			w: block.size,
-			h: block.size
+			x: mosaicControls.blockMargin + x * (mosaicControls.blockMargin + mosaicControls.blockSize),
+			y: mosaicControls.blockMargin + y * (mosaicControls.blockMargin + mosaicControls.blockSize),
+			w: mosaicControls.blockSize,
+			h: mosaicControls.blockSize
 		}
 
 		ctx.fillStyle = "rgb(" + node.color.r + "," + node.color.g + "," + node.color.b + ")";
@@ -312,10 +311,10 @@ function renderMosaic(data, canv) {
 			// If the name of the next node is the same as this one, draw a bit outside the border (for multicore jobs)
 			ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);	
 			if(sameForward) {
-				ctx.fillRect(rect.x, rect.y, rect.w + block.margin * 2, rect.h);
+				ctx.fillRect(rect.x, rect.y, rect.w + mosaicControls.blockMargin * 2, rect.h);
 			}
 			if(sameBackward) {
-				ctx.fillRect(rect.x - block.margin , rect.y, rect.w + block.margin, rect.h);
+				ctx.fillRect(rect.x - mosaicControls.blockMargin , rect.y, rect.w + mosaicControls.blockMargin, rect.h);
 			}
 		}
 		else {
@@ -411,7 +410,7 @@ function renderMosaic(data, canv) {
 		}
 
 		x++;
-		if(x >= width) {
+		if(x >= mosaicControls.width) {
 			x = 0;
 			y++;
 		}
