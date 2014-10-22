@@ -90,6 +90,14 @@ $(document).ready(function() {
 		}
 		setControlValues();
 		setLocalStorage();
+
+		// Set url parameters
+		var url = URI(window.location.href)
+		for(var control in mosaicControls) {
+			url.removeSearch(control);
+		}
+		url.removeSearch(mosaicControls).addSearch(mosaicControls);
+		window.history.pushState(null, null, url.toString());
 	});
 	$("#backgroundColor").change(function() {
 		if($(this).val() === "White") {
