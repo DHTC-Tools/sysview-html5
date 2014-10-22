@@ -16,6 +16,7 @@ mosaicControls.duplicateMulticore = true;
 mosaicControls.fontSize = "10"
 mosaicControls.filterStates = [];
 mosaicControls.filterSites = [];
+mosaicControls.backgroundColor = "black"
 
 var loadedImages = {}; // Dict of image name -> image object
 var notFiltered = []; // List of nodes that haven't been filtered out (if we are filtering stuff)
@@ -77,10 +78,12 @@ $(document).ready(function() {
 		if($(this).val() === "White") {
 			document.body.style.backgroundColor = "#fff";
 			document.body.style.color = "#000";
+			mosaicControls.backgroundColor = "White";
 		}
 		else if($(this).val() === "Black") {
 			document.body.style.backgroundColor = "#000";
 			document.body.style.color = "#fff";
+			mosaicControls.backgroundColor = "Black"
 		}
 
 		setLocalStorage();
@@ -121,7 +124,11 @@ function getLocalStorage() {
 	if(localStorage.mosaicFilter) mosaicControls.filter = localStorage.mosaicFilter;
 	if(localStorage.mosaicDupMulti) mosaicControls.duplicateMulticore = localStorage.mosaicDupMulti === "true" ? true : false;
 
-	if(localStorage.mosaicBackgroundColor) $("#backgroundColor").val(localStorage.mosaicBackgroundColor).trigger("change");
+	if(localStorage.mosaicBackgroundColor) {
+		$("#backgroundColor").val(localStorage.mosaicBackgroundColor).trigger("change");
+		mosaicControls.backgroundColor = localStorage.mosaicBackgroundColor;
+	}
+
 }
 
 function setLocalStorage() {
