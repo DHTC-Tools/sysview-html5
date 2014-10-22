@@ -25,7 +25,24 @@ $(document).ready(function() {
 	// Get the localStorage data (if any)
 	getLocalStorage();
 
-	// Set the controls stuff
+	// Set the controls stuff from the url parameters
+	var params = URI(window.location.href).query(true);
+	for(var control in mosaicControls) {
+		if(control in params) {
+			mosaicControls[control] = params[control];
+		}
+	}
+	if(mosaicControls.backgroundColor) {
+		$("#backgroundColor").val(mosaicControls.backgroundColor).trigger("change");
+	}
+
+	// Force the booleans to not be strings
+	if(mosaicControls.duplicateMulticore) {
+		mosaicControls.duplicateMulticore = mosaicControls.duplicateMulticore === "true";
+	}
+	if(mosaicControls.fitWidth) {
+		mosaicControls.fitWidth = mosaicControls.fitWidth === "true";
+	}
 
 	// Set values in input elements
 	setControlValues();
