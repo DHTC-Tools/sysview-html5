@@ -47,6 +47,11 @@ $(document).ready(function() {
 	// Set values in input elements
 	setControlValues();
 
+	// If the "controls" parameter is set, hide the controls and the button
+	if(params.controls && params.controls === "false") {
+		$(".control").hide();
+	}
+
 	// Set clicks
 	$("#toggleControls").click(function() {
 		$("#controls").toggle();
