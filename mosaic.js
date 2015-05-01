@@ -399,17 +399,14 @@ function renderMosaic(data, canv) {
 				case "install":
 					icon = "i";
 					break;
-				case "lsst":
-					icon = "L";
-					break;
 				case "mcore":
 					icon = "MC";
 					break;
 				case "mis":
 					icon = "m";
 					break;
-				case "nova":
-					icon = "NV";
+				case "fermi":
+					icon = "F";
 					break;
 				case "opport":
 					icon = "(?)";
