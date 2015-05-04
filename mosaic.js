@@ -415,7 +415,7 @@ function renderMosaic(data, canv) {
 					icon = "E";
 					break;
 				case "osg":
-					icon = "o";
+					icon = "O";
 					break;
 				case "ruc":
 					icon = "cc";
